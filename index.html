@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#3A5A2E">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Vattna">
+  <meta name="description" content="Vattna krukväxterna hemma hos familjen Lundin.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+  <title>Vattna</title>
+</head>
+<body>
+  <div id="app">
+    <section id="onboarding" class="screen onboarding hidden" aria-labelledby="who-title">
+      <div class="onboard-inner">
+        <img class="onboard-mark" src="icon-192.png" width="96" height="96" alt="">
+        <p class="eyebrow">Familjen Lundin</p>
+        <h1 id="who-title">Vem är du?</h1>
+        <p class="lead">Så vet vi vem som vattnade, i den gemensamma loggen.</p>
+        <div class="who-grid">
+          <button type="button" class="who-card" data-person="Erik">
+            <span class="who-avatar" aria-hidden="true">E</span>
+            <span class="who-name">Erik</span>
+          </button>
+          <button type="button" class="who-card" data-person="Malin">
+            <span class="who-avatar malin" aria-hidden="true">M</span>
+            <span class="who-name">Malin</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="main" class="screen main hidden">
+      <header class="top">
+        <div class="top-row">
+          <div class="brand">
+            <img src="icon-180.png" width="36" height="36" alt="">
+            <div>
+              <h1>Vattna</h1>
+              <p class="brand-sub">Senapsgränd 9</p>
+            </div>
+          </div>
+          <div class="top-actions">
+            <button type="button" id="btn-log" class="icon-btn texty" aria-label="Öppna loggen">Logg</button>
+            <button type="button" id="btn-settings" class="icon-btn" aria-label="Öppna inställningar">⚙</button>
+          </div>
+        </div>
+        <div class="hud">
+          <div class="hud-item">
+            <span class="hud-label">Familjenivå</span>
+            <strong id="hud-level">1 · Grodd</strong>
+          </div>
+          <div class="hud-item">
+            <span class="hud-label">Streak</span>
+            <strong id="hud-streak">0 rundor</strong>
+          </div>
+          <button type="button" id="hud-who" class="hud-who" aria-label="Byt person"></button>
+        </div>
+      </header>
+
+      <div class="toolbar">
+        <div class="filters" id="filters" role="tablist" aria-label="Filter"></div>
+        <button type="button" id="btn-water-all" class="water-all hidden">
+          <span aria-hidden="true">💧</span>
+          <span>Vattna alla som är dags</span>
+        </button>
+      </div>
+
+      <main id="grid" class="grid" aria-live="polite"></main>
+      <p id="empty" class="empty hidden">Alla är nöjda just nu. Inga törstiga växter 🌿</p>
+    </section>
+  </div>
+
+  <div id="drops" class="drops" aria-hidden="true"></div>
+  <div id="toast" class="toast hidden" role="status"></div>
+
+  <div id="sheet-backdrop" class="backdrop hidden"></div>
+
+  <aside id="sheet-log" class="sheet hidden" aria-labelledby="log-title">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h2 id="log-title">Logg</h2>
+      <button type="button" id="btn-undo" class="text-btn" disabled>Ångra senaste</button>
+    </div>
+    <ol id="log-list" class="log-list"></ol>
+  </aside>
+
+  <aside id="sheet-settings" class="sheet hidden" aria-labelledby="set-title">
+    <div class="sheet-handle"></div>
+    <h2 id="set-title">Inställningar</h2>
+    <label class="field">
+      <span>Vem vattnar</span>
+      <select id="set-person">
+        <option>Erik</option>
+        <option>Malin</option>
+      </select>
+    </label>
+    <label class="toggle">
+      <input type="checkbox" id="set-sync" checked>
+      <span>Synka till Tilda efter vattning</span>
+    </label>
+    <label class="field">
+      <span>Namn på iPhone-genväg</span>
+      <input type="text" id="set-shortcut" value="Vattnat" autocomplete="off" spellcheck="false">
+    </label>
+    <p class="hint">Synken öppnar genvägen <em>Vattnat</em> och skickar texten vidare till Tilda. Inga nycklar ligger i appen.</p>
+    <div class="row-btns">
+      <button type="button" id="btn-export" class="ghost-btn">Exportera JSON</button>
+      <label class="ghost-btn file-btn">Importera JSON
+        <input type="file" id="btn-import" accept="application/json,.json" hidden>
+      </label>
+    </div>
+  </aside>
+
+  <script src="app.js"></script>
+</body>
+</html>
