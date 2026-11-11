@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function home(hid) { return hid == 'hh_HnMZVx3YSJ1d_PS8xzLhAqqX'; }
+
+    match /households/{hid}/entries/{eid} {
+      function valid(d) {
+        return d.keys().hasAll(['plantId', 'name', 'at', 'by', 'undone', 'updatedAt'])
+          && d.keys().hasOnly(['plantId', 'name', 'at', 'by', 'undone', 'updatedAt'])
+          && d.plantId is string && d.plantId.size() > 0 && d.plantId.size() <= 40
+          && d.name is string && d.name.size() <= 60
+          && d.at is string && d.at.size() <= 40
+          && d.by is string && d.by.size() <= 20
+          && d.undone is bool
+          && d.updatedAt == request.time;
+      }
+      allow get, list: if home(hid);
+      allow create: if home(hid) && eid.size() <= 120 && valid(request.resource.data);
+      // Bara "ångra" får ändras, och bara från false till true. Inget annat.
+      allow update: if home(hid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['undone', 'updatedAt'])
+        && request.resource.data.undone == true
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+
+    match /households/{hid}/meta/{doc} {
+      allow get: if home(hid) && doc == 'state';
+      allow create, update: if home(hid) && doc == 'state'
+        && request.resource.data.keys().hasOnly(['streak', 'updatedAt'])
+        && request.resource.data.streak is int
+        && request.resource.data.streak >= 0 && request.resource.data.streak <= 100000
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+  }
+}

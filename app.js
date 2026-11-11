@@ -39,11 +39,17 @@
     streak: 0,
     lastUndo: null,
     settings: { sync: true, shortcutName: "Vattnat" },
-    filter: "due"
+    filter: "due",
+    cloud: { lastPulled: null, metaDirty: false }
   });
 
-  let state = load();
+  const Cloud = window.VattnaCloud;
+  let state = Cloud.migrate(load());
   let toastTimer = 0;
+  let syncTimer = 0;
+  let syncing = false;
+  let syncAgain = false;
+  let syncState = "idle";
 
   function load() {
     try {
@@ -55,7 +61,8 @@
         ...parsed,
         watered: parsed.watered || {},
         log: Array.isArray(parsed.log) ? parsed.log : [],
-        settings: { sync: true, shortcutName: "Vattnat", ...(parsed.settings || {}) }
+        settings: { sync: true, shortcutName: "Vattnat", ...(parsed.settings || {}) },
+        cloud: parsed.cloud || { lastPulled: null, metaDirty: (parsed.streak | 0) > 0 }
       };
     } catch {
       return defaultState();
@@ -63,7 +70,54 @@
   }
 
   function save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* fullt */ }
+  }
+
+  function activeLog() {
+    return state.log.filter((e) => !e.undone);
+  }
+
+  /* ---------- Molnsynk ---------- */
+  function setSyncStatus(s) {
+    syncState = s;
+    const el = document.getElementById("sync-status");
+    if (!el) return;
+    const text = {
+      idle: "", syncing: "Synkar…", ok: "Synkat", offline: "Offline",
+      error: "Synkfel", partial: "Synkfel", unconfigured: "Endast lokalt"
+    }[s] || "";
+    el.textContent = text;
+    el.dataset.state = s;
+    el.classList.toggle("hidden", !text);
+  }
+
+  function pendingCount() {
+    return state.log.filter((e) => !e.synced || e.undoneDirty).length + (state.cloud.metaDirty ? 1 : 0);
+  }
+
+  async function syncNow() {
+    if (!Cloud.configured()) { setSyncStatus("unconfigured"); return; }
+    if (syncing) { syncAgain = true; return; }
+    if (typeof navigator !== "undefined" && navigator.onLine === false) { setSyncStatus("offline"); return; }
+    syncing = true;
+    if (syncState !== "ok" || pendingCount()) setSyncStatus("syncing");
+    try {
+      const res = await Cloud.syncOnce(state);
+      save();
+      setSyncStatus(res.status === "ok" ? "ok" : "partial");
+      if (res.changed) render();
+    } catch (err) {
+      save();
+      setSyncStatus(navigator.onLine === false || err instanceof TypeError ? "offline" : "error");
+    } finally {
+      syncing = false;
+      if (syncAgain) { syncAgain = false; scheduleSync(300); }
+    }
+  }
+
+  function scheduleSync(ms = 400) {
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(syncNow, ms);
   }
 
   function nowDate(d = new Date()) {
@@ -99,7 +153,7 @@
   }
 
   function levelInfo() {
-    const n = state.log.length;
+    const n = activeLog().length;
     const idx = Math.min(LEVELS.length - 1, Math.floor(n / 10));
     return { level: idx + 1, name: LEVELS[idx], total: n };
   }
@@ -202,23 +256,30 @@
     const at = new Date().toISOString();
     const prev = ids.map((id) => ({ id, prev: state.watered[id] || null }));
     const dueBefore = new Set(duePlants().map((p) => p.id));
+    const logIds = [];
     ids.forEach((id) => {
       state.watered[id] = at;
       const plant = plantById(id);
+      const entryId = Cloud.newEntryId(id);
+      logIds.push(entryId);
       state.log.unshift({
-        id: `${at}-${id}`,
+        id: entryId,
         plantId: id,
         name: plant ? plant.name : id,
         at,
-        by: who
+        by: who,
+        undone: false,
+        synced: false,
+        undoneDirty: false
       });
     });
     const dueAfter = duePlants();
     const completedRound = ids.some((id) => dueBefore.has(id)) && dueAfter.length === 0;
     const prevStreak = state.streak;
-    if (completedRound) state.streak += 1;
-    state.lastUndo = { items: prev, logIds: ids.map((id) => `${at}-${id}`), streak: prevStreak };
+    if (completedRound) { state.streak += 1; state.cloud.metaDirty = true; }
+    state.lastUndo = { items: prev, logIds, streak: prevStreak };
     save();
+    scheduleSync();
     renderFilters();
     renderHud();
     ids.forEach((id) => {
@@ -242,16 +303,22 @@
 
   function undo() {
     if (!state.lastUndo) return;
-    const { items, logIds } = state.lastUndo;
-    items.forEach(({ id, prev }) => {
-      if (prev) state.watered[id] = prev;
-      else delete state.watered[id];
+    const { logIds } = state.lastUndo;
+    state.log.forEach((entry) => {
+      if (logIds.includes(entry.id) && !entry.undone) {
+        entry.undone = true;
+        entry.undoneDirty = true;
+      }
     });
-    state.log = state.log.filter((entry) => !logIds.includes(entry.id));
-    if (typeof state.lastUndo.streak === "number") state.streak = state.lastUndo.streak;
+    Cloud.derive(state);
+    if (typeof state.lastUndo.streak === "number" && state.streak !== state.lastUndo.streak) {
+      state.streak = state.lastUndo.streak;
+      state.cloud.metaDirty = true;
+    }
     state.lastUndo = null;
     save();
     render();
+    scheduleSync();
     toast("Senaste vattningen ångrad");
   }
 
@@ -271,15 +338,19 @@
       try {
         const parsed = JSON.parse(reader.result);
         if (!parsed || typeof parsed !== "object") throw new Error("ogiltig");
-        state = {
+        // Importen läggs till i den delade loggen (ingenting raderas).
+        const incoming = Cloud.migrate({
           ...defaultState(),
-          ...parsed,
           watered: parsed.watered || {},
-          log: Array.isArray(parsed.log) ? parsed.log : [],
-          settings: { sync: true, shortcutName: "Vattnat", ...(parsed.settings || {}) }
-        };
+          log: (Array.isArray(parsed.log) ? parsed.log : []).map((e) => ({ ...e, synced: false, undoneDirty: false })),
+          person: state.person
+        });
+        const have = new Set(state.log.map((e) => e.id));
+        incoming.log.forEach((e) => { if (!have.has(e.id)) state.log.push(e); });
+        Cloud.derive(state);
         save();
         render();
+        scheduleSync(100);
         toast("Data importerad");
       } catch {
         toast("Kunde inte läsa filen");
@@ -363,11 +434,12 @@
   function renderLog() {
     const list = document.getElementById("log-list");
     document.getElementById("btn-undo").disabled = !state.lastUndo;
-    if (!state.log.length) {
+    const entries = activeLog();
+    if (!entries.length) {
       list.innerHTML = `<li><span></span><div><strong>Inget vattnat ännu</strong><span>Första trycket hamnar här.</span></div></li>`;
       return;
     }
-    list.innerHTML = state.log.map((entry) => `
+    list.innerHTML = entries.map((entry) => `
       <li>
         <img src="${iconPath(entry.plantId)}" alt="">
         <div>
@@ -388,6 +460,7 @@
     renderHud();
     renderGrid();
     if (!document.getElementById("sheet-log").classList.contains("hidden")) renderLog();
+    setSyncStatus(syncState);
   }
 
   function bind() {
@@ -444,5 +517,17 @@
   }
 
   bind();
+  save();
   render();
+  setSyncStatus(Cloud.configured() ? (navigator.onLine === false ? "offline" : "syncing") : "unconfigured");
+  syncNow();
+  window.addEventListener("online", () => scheduleSync(200));
+  window.addEventListener("offline", () => setSyncStatus("offline"));
+  window.addEventListener("pageshow", () => scheduleSync(200));
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") scheduleSync(200);
+  });
+  setInterval(() => {
+    if (document.visibilityState === "visible") syncNow();
+  }, 60000);
 })();

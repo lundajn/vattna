@@ -1,9 +1,10 @@
-const CACHE = "vattna-lundin-v5";
+const CACHE = "vattna-lundin-v6";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
+  "./sync.js",
   "./manifest.json",
   "./icon-180.png",
   "./icon-192.png",
@@ -44,6 +45,8 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
+  // Molnloggen (Firestore) och allt annat utanför appen: rör inte, cacha inte.
+  if (url.origin !== self.location.origin) return;
   const isIcon = url.pathname.includes("/icons/") || url.pathname.endsWith(".png");
   if (isIcon) {
     // Bilder: cache först

@@ -391,3 +391,27 @@ img { display: block; max-width: 100%; }
   .main { max-width: 430px; margin: 0 auto; }
   .top { border-radius: 0 0 24px 24px; }
 }
+
+/* Synkstatus */
+.sync-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+.sync-status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #8FB07A;
+}
+.sync-status[data-state="syncing"]::before { background: #C9B36A; }
+.sync-status[data-state="offline"]::before,
+.sync-status[data-state="unconfigured"]::before { background: #B9B09A; }
+.sync-status[data-state="error"]::before,
+.sync-status[data-state="partial"]::before { background: #E39A62; }

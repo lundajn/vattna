@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=6">
   <title>Vattna</title>
 </head>
 <body>
@@ -43,7 +43,7 @@
             <img src="icon-180.png" width="36" height="36" alt="">
             <div>
               <h1>Vattna</h1>
-              <p class="brand-sub">Senapsgränd 9</p>
+              <p class="brand-sub">Senapsgränd 9 <span id="sync-status" class="sync-status hidden" role="status" aria-live="polite"></span></p>
             </div>
           </div>
           <div class="top-actions">
@@ -109,6 +109,7 @@
     </div>
   </aside>
 
-  <script src="app.js?v=5"></script>
+  <script src="sync.js?v=6"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>
