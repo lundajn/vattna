@@ -151,6 +151,7 @@
   }
 
   function notifyTilda(ids, who) {
+    return; // genvägen borttagen 11 nov 2026
     if (!state.settings.sync) return;
     if (!isIOS()) return;
     const name = (state.settings.shortcutName || "Vattnat").trim() || "Vattnat";
@@ -302,8 +303,6 @@
     if (id === "sheet-log") renderLog();
     if (id === "sheet-settings") {
       document.getElementById("set-person").value = state.person || "Erik";
-      document.getElementById("set-sync").checked = !!state.settings.sync;
-      document.getElementById("set-shortcut").value = state.settings.shortcutName || "Vattnat";
     }
   }
 
@@ -416,14 +415,6 @@
       state.person = e.target.value;
       save();
       render();
-    });
-    document.getElementById("set-sync").addEventListener("change", (e) => {
-      state.settings.sync = e.target.checked;
-      save();
-    });
-    document.getElementById("set-shortcut").addEventListener("change", (e) => {
-      state.settings.shortcutName = e.target.value.trim() || "Vattnat";
-      save();
     });
     document.getElementById("btn-export").addEventListener("click", exportJson);
     document.getElementById("btn-import").addEventListener("change", (e) => {
