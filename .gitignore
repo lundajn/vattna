@@ -1,3 +1,4 @@
 screens/
 firestore-debug.log
+firebase-debug.log
 *.log
