@@ -4,29 +4,31 @@
 
   const PLANTS = [
     { id: "fredskalla", name: "Fredskalla", floor: "Plan 2", interval: 7 },
-    { id: "ginsengfikus", name: "Ginsengfikus", floor: "Plan 1", interval: 7 },
-    { id: "anthurium", name: "Anthurium", floor: "Plan 1", interval: 7 },
-    { id: "paraplyaralia", name: "Paraplyaralia", floor: "Plan 1", interval: 7 },
-    { id: "bergpalm", name: "Bergpalm", floor: "Barnrummet", interval: 7 },
-    { id: "gummitrad", name: "Gummiträd", floor: "Plan 1", interval: 14 },
-    { id: "aeonium", name: "Aeonium", floor: "Plan 1", interval: 14 },
-    { id: "peperomia", name: "Peperomia", floor: "Plan 1", interval: 14 },
-    { id: "clusia", name: "Clusia", floor: "Plan 1", interval: 14 },
-    { id: "orkide", name: "Orkidé", floor: "Plan 1", interval: 14, note: "doppvattnas" },
-    { id: "svarrmorstunga_rund", name: "Svärmorstunga rund", floor: "Plan 2", interval: 28 },
+    { id: "ginsengfikus", name: "Ginsengfikus", floor: "Vardagsrum", interval: 7 },
+    { id: "anthurium", name: "Anthurium", floor: "Vardagsrum", interval: 7 },
+    { id: "paraplyaralia", name: "Paraplyaralia", floor: "Lekrum", interval: 7 },
+    { id: "bergpalm", name: "Bergpalm", floor: "Gustafs rum", interval: 7 },
+    { id: "gummitrad", name: "Gummiträd", floor: "Vardagsrum", interval: 14 },
+    { id: "aeonium", name: "Aeonium", floor: "Vardagsrum", interval: 14 },
+    { id: "peperomia", name: "Peperomia", floor: "Vardagsrum", interval: 14 },
+    { id: "clusia", name: "Clusia", floor: "Lekrum", interval: 14 },
+    { id: "orkide", name: "Orkidé", floor: "Vardagsrum", interval: 14, note: "doppvattnas" },
+    { id: "svarrmorstunga_rund", name: "Svärmorstunga rund", floor: "Nils rum", interval: 28 },
     { id: "svarrmorstunga_gra", name: "Svärmorstunga grå kruka", floor: "Plan 2", interval: 28 },
     { id: "svarrmorstunga_brun", name: "Svärmorstunga brun kruka", floor: "Plan 2", interval: 28 },
-    { id: "euphorbia", name: "Euphorbia", floor: "Plan 1", interval: 28 },
-    { id: "zamioculcas", name: "Zamioculcas", floor: "Plan 1", interval: 28 }
+    { id: "euphorbia", name: "Euphorbia", floor: "Vardagsrum", interval: 28 },
+    { id: "zamioculcas", name: "Zamioculcas", floor: "Vardagsrum", interval: 28 }
   ];
 
   const LEVELS = ["Grodd", "Skott", "Planta", "Buske", "Träd", "Djungel"];
   const FILTERS = [
     { id: "due", label: "Dags nu" },
     { id: "all", label: "Alla" },
-    { id: "Plan 1", label: "Plan 1" },
-    { id: "Plan 2", label: "Plan 2" },
-    { id: "Barnrummet", label: "Barnrum" }
+    { id: "Vardagsrum", label: "Vardagsrum" },
+    { id: "Lekrum", label: "Lekrum" },
+    { id: "Gustafs rum", label: "Gustafs rum" },
+    { id: "Nils rum", label: "Nils rum" },
+    { id: "Plan 2", label: "Plan 2" }
   ];
 
   const defaultState = () => ({
