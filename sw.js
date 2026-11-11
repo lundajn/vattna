@@ -1,4 +1,4 @@
-const CACHE = "vattna-lundin-v4";
+const CACHE = "vattna-lundin-v5";
 const ASSETS = [
   "./",
   "./index.html",
@@ -28,7 +28,7 @@ const ASSETS = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE).then((cache) => cache.addAll(ASSETS.map((u) => new Request(u, { cache: "reload" })))).then(() => self.skipWaiting())
   );
 });
 
@@ -43,14 +43,25 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
-  event.respondWith(
-    caches.match(req).then((cached) => {
-      const fetched = fetch(req).then((res) => {
+  const url = new URL(req.url);
+  const isIcon = url.pathname.includes("/icons/") || url.pathname.endsWith(".png");
+  if (isIcon) {
+    // Bilder: cache först
+    event.respondWith(
+      caches.match(req).then((cached) => cached || fetch(req).then((res) => {
         const copy = res.clone();
-        caches.open(CACHE).then((cache) => cache.put(req, copy)).catch(() => {});
+        caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
         return res;
-      }).catch(() => cached);
-      return cached || fetched;
-    })
+      }))
+    );
+    return;
+  }
+  // Sidan, koden och stilen: nätet först så att nya versioner syns direkt
+  event.respondWith(
+    fetch(new Request(req, { cache: "no-store" })).then((res) => {
+      const copy = res.clone();
+      caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+      return res;
+    }).catch(() => caches.match(req, { ignoreSearch: true }))
   );
 });
