@@ -1,4 +1,4 @@
-const CACHE = "vattna-lundin-v3";
+const CACHE = "vattna-lundin-v4";
 const ASSETS = [
   "./",
   "./index.html",

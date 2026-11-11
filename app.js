@@ -14,7 +14,7 @@
     { id: "clusia", name: "Clusia", floor: "Lekrum", interval: 14 },
     { id: "orkide", name: "Orkidé", floor: "Vardagsrum", interval: 14, note: "doppvattnas" },
     { id: "svarrmorstunga_rund", name: "Svärmorstunga rund", floor: "Nils rum", interval: 28 },
-    { id: "svarrmorstunga_gra", name: "Svärmorstunga grå kruka", floor: "Plan 2", interval: 28 },
+    { id: "svarrmorstunga_gra", name: "Svärmorstunga grå kruka", floor: "Williams rum", interval: 28 },
     { id: "svarrmorstunga_brun", name: "Svärmorstunga brun kruka", floor: "Plan 2", interval: 28 },
     { id: "euphorbia", name: "Euphorbia", floor: "Vardagsrum", interval: 28 },
     { id: "zamioculcas", name: "Zamioculcas", floor: "Vardagsrum", interval: 28 }
@@ -28,6 +28,7 @@
     { id: "Lekrum", label: "Lekrum" },
     { id: "Gustafs rum", label: "Gustafs rum" },
     { id: "Nils rum", label: "Nils rum" },
+    { id: "Williams rum", label: "Williams rum" },
     { id: "Plan 2", label: "Plan 2" }
   ];
 
