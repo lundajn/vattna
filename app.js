@@ -40,6 +40,7 @@
     lastUndo: null,
     settings: { sync: true, shortcutName: "Vattnat" },
     filter: "due",
+    sort: "time",
     cloud: { lastPulled: null, metaDirty: false }
   });
 
@@ -62,7 +63,8 @@
         watered: parsed.watered || {},
         log: Array.isArray(parsed.log) ? parsed.log : [],
         settings: { sync: true, shortcutName: "Vattnat", ...(parsed.settings || {}) },
-        cloud: parsed.cloud || { lastPulled: null, metaDirty: (parsed.streak | 0) > 0 }
+        cloud: parsed.cloud || { lastPulled: null, metaDirty: (parsed.streak | 0) > 0 },
+        sort: parsed.sort === "room" ? "room" : "time"
       };
     } catch {
       return defaultState();
@@ -152,6 +154,38 @@
     return "ok";
   }
 
+  /* Millisekunder kvar till 0%. Negativt = hur länge över tiden. Aldrig vattnad längst bakåt. */
+  function timeLeftMs(plant, now = new Date()) {
+    const last = lastWatered(plant.id);
+    const span = intervalDays(plant, nowDate(now)) * 86400000;
+    if (!last) return Number.NEGATIVE_INFINITY;
+    return span - (now - last);
+  }
+
+  const ROOM_ORDER = FILTERS.filter((f) => f.id !== "due" && f.id !== "all").map((f) => f.id);
+  const PLANT_ORDER = Object.fromEntries(PLANTS.map((p, i) => [p.id, i]));
+
+  function sortPlants(plants, sort, now = new Date()) {
+    const list = plants.slice();
+    if (sort === "room") {
+      list.sort((a, b) => {
+        const ra = ROOM_ORDER.indexOf(a.floor);
+        const rb = ROOM_ORDER.indexOf(b.floor);
+        const room = (ra < 0 ? 999 : ra) - (rb < 0 ? 999 : rb);
+        if (room) return room;
+        return (PLANT_ORDER[a.id] ?? 0) - (PLANT_ORDER[b.id] ?? 0);
+      });
+      return list;
+    }
+    list.sort((a, b) => {
+      const ta = timeLeftMs(a, now);
+      const tb = timeLeftMs(b, now);
+      if (ta !== tb) return ta - tb;
+      return (PLANT_ORDER[a.id] ?? 0) - (PLANT_ORDER[b.id] ?? 0);
+    });
+    return list;
+  }
+
   function levelInfo() {
     const n = activeLog().length;
     const idx = Math.min(LEVELS.length - 1, Math.floor(n / 10));
@@ -164,11 +198,12 @@
 
   function visiblePlants() {
     const now = new Date();
-    return PLANTS.filter((p) => {
+    const filtered = PLANTS.filter((p) => {
       if (state.filter === "due") return statusOf(p, now) === "due";
       if (state.filter === "all") return true;
       return p.floor === state.filter;
     });
+    return sortPlants(filtered, state.sort, now);
   }
 
   function duePlants() {
@@ -449,6 +484,12 @@
       </li>`).join("");
   }
 
+  function renderSort() {
+    document.querySelectorAll(".sort-opt").forEach((btn) => {
+      btn.setAttribute("aria-checked", btn.dataset.sort === state.sort ? "true" : "false");
+    });
+  }
+
   function render() {
     if (!state.person) {
       showOnboarding();
@@ -457,6 +498,7 @@
     document.getElementById("onboarding").classList.add("hidden");
     document.getElementById("main").classList.remove("hidden");
     renderFilters();
+    renderSort();
     renderHud();
     renderGrid();
     if (!document.getElementById("sheet-log").classList.contains("hidden")) renderLog();
@@ -471,6 +513,15 @@
       const chip = e.target.closest("[data-filter]");
       if (!chip) return;
       state.filter = chip.dataset.filter;
+      save();
+      render();
+    });
+    document.querySelector(".sort-toggle").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-sort]");
+      if (!btn) return;
+      const next = btn.dataset.sort === "room" ? "room" : "time";
+      if (state.sort === next) return;
+      state.sort = next;
       save();
       render();
     });

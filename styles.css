@@ -184,6 +184,40 @@ img { display: block; max-width: 100%; }
 }
 .chip[aria-selected="false"] .count { background: rgba(79, 121, 66, 0.15); }
 
+.sort-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+}
+.sort-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.sort-toggle {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(79, 121, 66, 0.08);
+  border: 1px solid rgba(58, 90, 46, 0.10);
+}
+.sort-opt {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--forest);
+}
+.sort-opt[aria-checked="true"] {
+  background: var(--leaf);
+  color: var(--cream);
+}
+.sort-opt:active { transform: scale(0.97); }
+
 .water-all {
   width: 100%;
   margin-top: 12px;

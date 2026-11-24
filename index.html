@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=6">
+  <link rel="stylesheet" href="styles.css?v=7">
   <title>Vattna</title>
 </head>
 <body>
@@ -66,6 +66,13 @@
 
       <div class="toolbar">
         <div class="filters" id="filters" role="tablist" aria-label="Filter"></div>
+        <div class="sort-bar">
+          <span class="sort-label" id="sort-label">Sortera</span>
+          <div class="sort-toggle" role="radiogroup" aria-labelledby="sort-label">
+            <button type="button" class="sort-opt" role="radio" data-sort="time" aria-checked="true">Tid kvar</button>
+            <button type="button" class="sort-opt" role="radio" data-sort="room" aria-checked="false">Rum</button>
+          </div>
+        </div>
         <button type="button" id="btn-water-all" class="water-all hidden">
           <span aria-hidden="true">💧</span>
           <span>Vattna alla som är dags</span>
@@ -109,7 +116,7 @@
     </div>
   </aside>
 
-  <script src="sync.js?v=6"></script>
-  <script src="app.js?v=6"></script>
+  <script src="sync.js?v=7"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>
